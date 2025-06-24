@@ -25,10 +25,10 @@ export default function ProjectView({ project, updateProject, deleteProject, onG
   const [isThumbLoading, setIsThumbLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleGenerateBackground = async (prompt: string) => {
+  const handleGenerateBackground = async (prompt: string, image?: string) => {
     setIsBgLoading(true);
     try {
-      const result = await generateBackgroundImage({ prompt });
+      const result = await generateBackgroundImage({ prompt, image });
       const newAsset: Asset = {
         id: new Date().toISOString(),
         type: 'background',

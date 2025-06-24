@@ -38,21 +38,26 @@ export async function generateThumbnail(input: GenerateThumbnailInput): Promise<
 const generateThumbnailPrompt = ai.definePrompt({
   name: 'generateThumbnailPrompt',
   input: {schema: GenerateThumbnailInputSchema},
-  output: {schema: GenerateThumbnailOutputSchema},
-  prompt: `You are an AI assistant that generates YouTube thumbnails based on a text prompt or a user-provided image.
+  prompt: `You are a world-class YouTube thumbnail designer. Your task is to create a visually stunning, high-impact thumbnail that maximizes click-through rate (CTR).
 
-  {{#if image}}
-  Use the following image as a base for generating the thumbnail: {{media url=image}}
-  {{/if}}
+Analyze the user's request, considering the following principles of great thumbnail design:
+1.  **Clarity and Readability:** Use bold, easy-to-read fonts. Keep text minimal and impactful.
+2.  **Emotional Impact:** Convey a strong emotion (e.g., surprise, curiosity, excitement) through imagery and composition.
+3.  **Visual Hierarchy:** Guide the viewer's eye to the most important elements (usually a face, a key object, or text).
+4.  **Brand Consistency:** If a style or reference image is provided, maintain that visual identity.
+5.  **Contrast and Color:** Use vibrant, contrasting colors to make the thumbnail pop.
 
-  {{#if prompt}}
-  Generate a thumbnail based on the following prompt: {{{prompt}}}
-  {{/if}}
+{{#if image}}
+Use the following image as a base for your design. You can modify it, enhance it, or use it as inspiration.
+{{media url=image}}
+{{/if}}
 
-  Ensure the generated thumbnail is visually appealing and relevant to the prompt or image.
+{{#if prompt}}
+Follow these specific instructions from the user: {{{prompt}}}
+{{/if}}
 
-  Return the thumbnail as a data URI.
-  `,
+Generate a compelling 1280x720 pixel thumbnail. Ensure it's eye-catching even at small sizes.
+`,
 });
 
 const generateThumbnailFlow = ai.defineFlow(
@@ -66,12 +71,11 @@ const generateThumbnailFlow = ai.defineFlow(
       throw new Error('Either a prompt or an image must be provided.');
     }
 
+    const renderedPrompt = await generateThumbnailPrompt.render(input);
+
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: [
-        ...(input.image ? [{media: {url: input.image}}] : []),
-        ...(input.prompt ? [{text: input.prompt}] : []),
-      ],
+      prompt: renderedPrompt.prompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
       },

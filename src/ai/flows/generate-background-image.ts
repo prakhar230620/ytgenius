@@ -1,9 +1,7 @@
-// This file is machine-generated - edit at your own risk!
-
 'use server';
 
 /**
- * @fileOverview Generates background images for YouTube videos and Shorts from a text prompt.
+ * @fileOverview Generates professional background images for YouTube videos and Shorts from a text prompt and an optional reference image.
  *
  * - generateBackgroundImage - A function that handles the image generation process.
  * - GenerateBackgroundImageInput - The input type for the generateBackgroundImage function.
@@ -12,10 +10,15 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import wav from 'wav';
 
 const GenerateBackgroundImageInputSchema = z.object({
-  prompt: z.string().describe('The text prompt to generate the background image from.'),
+  prompt: z.string().optional().describe('A detailed text prompt for the background image.'),
+  image: z
+    .string()
+    .optional()
+    .describe(
+      "An optional reference image as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    ),
 });
 export type GenerateBackgroundImageInput = z.infer<typeof GenerateBackgroundImageInputSchema>;
 
@@ -23,7 +26,7 @@ const GenerateBackgroundImageOutputSchema = z.object({
   backgroundImageDataUri: z
     .string()
     .describe(
-      'The generated background image as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.' 
+      "The generated background image as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
 });
 export type GenerateBackgroundImageOutput = z.infer<typeof GenerateBackgroundImageOutputSchema>;
@@ -34,13 +37,6 @@ export async function generateBackgroundImage(
   return generateBackgroundImageFlow(input);
 }
 
-const generateBackgroundImagePrompt = ai.definePrompt({
-  name: 'generateBackgroundImagePrompt',
-  input: {schema: GenerateBackgroundImageInputSchema},
-  output: {schema: GenerateBackgroundImageOutputSchema},
-  prompt: `Generate a background image based on the following prompt: {{{prompt}}}. The image should be suitable for use as a background in a YouTube video or Short.`, // Ensure prompt is valid handlebars
-});
-
 const generateBackgroundImageFlow = ai.defineFlow(
   {
     name: 'generateBackgroundImageFlow',
@@ -48,18 +44,29 @@ const generateBackgroundImageFlow = ai.defineFlow(
     outputSchema: GenerateBackgroundImageOutputSchema,
   },
   async input => {
+    if (!input.prompt && !input.image) {
+      throw new Error('Either a prompt or an image must be provided.');
+    }
+
+    const systemPrompt = `You are a professional graphic designer specializing in creating stunning, high-quality background images for YouTube videos. Your goal is to create a visually appealing, non-distracting, and thematically appropriate background that enhances the main content of the video. Analyze the user's request carefully. Generate a high-resolution background image suitable for a 16:9 aspect ratio. The image should be beautiful and engaging but subtle enough not to overpower a presenter or on-screen text.`;
+
+    const userPromptParts = [
+      ...(input.image ? [{media: {url: input.image}}] : []),
+      ...(input.prompt ? [{text: `User's detailed request: ${input.prompt}`}] : []),
+    ];
+
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: input.prompt,
+      prompt: [{text: systemPrompt}, ...userPromptParts],
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
       },
     });
 
-    if (!media) {
-      throw new Error('No image was generated.');
+    if (!media?.url) {
+      throw new Error('Failed to generate background image.');
     }
-    
+
     return {
       backgroundImageDataUri: media.url,
     };
