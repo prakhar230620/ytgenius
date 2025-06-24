@@ -50,7 +50,7 @@ export default function AssetCard({ asset, deleteAsset }: AssetCardProps) {
             </div>
           </div>
         </DialogTrigger>
-        <DialogContent className="max-w-5xl p-0 border-0 bg-transparent">
+        <DialogContent className="max-w-7xl w-full p-4 flex items-center justify-center bg-transparent border-0 shadow-none">
             <DialogHeader>
                 <DialogTitle className="sr-only">{asset.prompt || "Image Preview"}</DialogTitle>
             </DialogHeader>
@@ -60,7 +60,7 @@ export default function AssetCard({ asset, deleteAsset }: AssetCardProps) {
                 alt={asset.prompt}
                 width={1920}
                 height={1080}
-                className="w-full h-auto object-contain rounded-lg"
+                className="max-h-[90vh] w-auto h-auto rounded-lg shadow-2xl"
               />
               <DialogClose asChild>
                 <Button variant="secondary" className="absolute top-4 left-4">

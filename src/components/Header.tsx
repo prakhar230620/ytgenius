@@ -1,20 +1,13 @@
 "use client";
 
 import { useState } from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, List, Check } from 'lucide-react';
 import { Logo } from '@/components/icons';
 import { type Project } from '@/types';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   projects: Project[];
@@ -25,15 +18,21 @@ interface HeaderProps {
 
 export default function Header({ projects, activeProjectId, setActiveProjectId, onCreateProject }: HeaderProps) {
   const [newProjectName, setNewProjectName] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isProjectsDialogOpen, setIsProjectsDialogOpen] = useState(false);
 
   const handleCreateProject = () => {
     if (newProjectName.trim()) {
       onCreateProject(newProjectName.trim());
       setNewProjectName('');
-      setIsDialogOpen(false);
     }
   };
+
+  const handleSelectProject = (id: string) => {
+    setActiveProjectId(id);
+    setIsProjectsDialogOpen(false);
+  };
+
+  const activeProject = projects.find(p => p.id === activeProjectId);
 
   return (
     <header className="sticky top-0 z-10 w-full border-b bg-background/80 backdrop-blur-sm">
@@ -43,46 +42,54 @@ export default function Header({ projects, activeProjectId, setActiveProjectId, 
           <h1 className="font-headline text-xl font-bold text-primary">YTGenius</h1>
         </div>
         <div className="flex items-center gap-2">
-          {projects.length > 0 && (
-            <Select value={activeProjectId ?? ''} onValueChange={setActiveProjectId}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select a project" />
-              </SelectTrigger>
-              <SelectContent>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={isProjectsDialogOpen} onOpenChange={setIsProjectsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" /> New Project
+              <Button variant="outline" className="w-[180px] sm:w-[220px] justify-start">
+                <List className="mr-2 h-4 w-4 shrink-0" />
+                <span className="truncate">{activeProject ? activeProject.name : 'Select Project'}</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="font-headline">Create New Project</DialogTitle>
+                <DialogTitle className="font-headline">Manage Projects</DialogTitle>
+                <DialogDescription>Select an existing project or create a new one to get started.</DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Name
-                  </Label>
+              <div className="mt-4 max-h-[40vh] space-y-2 overflow-y-auto pr-2">
+                {projects.map((project) => (
+                  <button
+                    key={project.id}
+                    onClick={() => handleSelectProject(project.id)}
+                    className={cn(
+                        "w-full flex items-center justify-between text-left p-3 rounded-md transition-colors",
+                        project.id === activeProjectId 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'hover:bg-muted'
+                      )}
+                  >
+                    <span className="truncate">{project.name}</span>
+                    {project.id === activeProjectId && <Check className="h-4 w-4" />}
+                  </button>
+                ))}
+                 {projects.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">No projects yet. Create one below!</p>
+                )}
+              </div>
+              <div className="pt-4 border-t">
+                <label htmlFor="new-project-name" className="text-sm font-medium">Create New Project</label>
+                <div className="flex items-center gap-2 mt-2">
                   <Input
-                    id="name"
+                    id="new-project-name"
                     value={newProjectName}
                     onChange={(e) => setNewProjectName(e.target.value)}
-                    className="col-span-3"
                     placeholder="My Awesome Channel"
                     onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
                   />
+                  <Button onClick={handleCreateProject} disabled={!newProjectName.trim()} size="icon">
+                    <PlusCircle className="h-4 w-4" />
+                    <span className="sr-only">Create</span>
+                  </Button>
                 </div>
               </div>
-              <Button onClick={handleCreateProject} className="w-full">Create Project</Button>
             </DialogContent>
           </Dialog>
         </div>
