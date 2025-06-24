@@ -8,6 +8,7 @@ import { PlusCircle, List, Check } from 'lucide-react';
 import { Logo } from '@/components/icons';
 import { type Project } from '@/types';
 import { cn } from '@/lib/utils';
+import InstallButton from "@/components/InstallButton";
 
 interface HeaderProps {
   projects: Project[];
@@ -43,6 +44,7 @@ export default function Header({ projects, activeProjectId, setActiveProjectId, 
           <h1 className="font-headline text-xl font-bold text-primary">YTGenius</h1>
         </button>
         <div className="flex items-center gap-2">
+          <InstallButton className="hidden sm:flex" />
           <Dialog open={isProjectsDialogOpen} onOpenChange={setIsProjectsDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="w-[180px] sm:w-[220px] justify-start">

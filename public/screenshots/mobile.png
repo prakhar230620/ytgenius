@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="720" viewBox="0 0 540 720">
+  <rect width="540" height="720" fill="#E8EAF6" />
+  <rect x="20" y="40" width="500" height="80" rx="10" fill="#3F51B5" />
+  <text x="50" y="90" font-family="Arial" font-size="30" fill="white">YTGenius</text>
+  <rect x="20" y="140" width="500" height="200" rx="10" fill="white" stroke="#3F51B5" stroke-width="2" />
+  <text x="40" y="180" font-family="Arial" font-size="24" fill="#3F51B5">Project 1</text>
+  <rect x="40" y="200" width="460" height="120" rx="5" fill="#F5F5F5" />
+  <rect x="20" y="360" width="500" height="200" rx="10" fill="white" stroke="#3F51B5" stroke-width="2" />
+  <text x="40" y="400" font-family="Arial" font-size="24" fill="#3F51B5">Project 2</text>
+  <rect x="40" y="420" width="460" height="120" rx="5" fill="#F5F5F5" />
+  <rect x="240" y="600" width="60" height="60" rx="30" fill="#7E57C2" />
+  <text x="260" y="640" font-family="Arial" font-size="40" fill="white">+</text>
+</svg>

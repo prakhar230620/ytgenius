@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#3F51B5" rx="0" ry="0"/>
+  <circle cx="256" cy="256" r="192" fill="#3F51B5"/>
+  <text x="256" y="300" font-family="Arial" font-size="180" font-weight="bold" text-anchor="middle" fill="#FFFFFF">YT</text>
+  <path d="M256 120 L310 190 L256 260 L202 190 Z" fill="#7E57C2" stroke="#FFFFFF" stroke-width="4"/>
+</svg>

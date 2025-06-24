@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800">
+  <rect width="1280" height="800" fill="#E8EAF6" />
+  <rect x="0" y="0" width="1280" height="80" fill="#3F51B5" />
+  <text x="50" y="50" font-family="Arial" font-size="30" fill="white">YTGenius</text>
+  <rect x="240" y="120" width="800" height="100" rx="10" fill="white" stroke="#3F51B5" stroke-width="2" />
+  <text x="270" y="180" font-family="Arial" font-size="30" fill="#3F51B5">Create New Project</text>
+  <rect x="240" y="240" width="380" height="250" rx="10" fill="white" stroke="#3F51B5" stroke-width="2" />
+  <text x="270" y="280" font-family="Arial" font-size="24" fill="#3F51B5">Project 1</text>
+  <rect x="270" y="300" width="320" height="170" rx="5" fill="#F5F5F5" />
+  <rect x="660" y="240" width="380" height="250" rx="10" fill="white" stroke="#3F51B5" stroke-width="2" />
+  <text x="690" y="280" font-family="Arial" font-size="24" fill="#3F51B5">Project 2</text>
+  <rect x="690" y="300" width="320" height="170" rx="5" fill="#F5F5F5" />
+  <rect x="240" y="510" width="380" height="250" rx="10" fill="white" stroke="#3F51B5" stroke-width="2" />
+  <text x="270" y="550" font-family="Arial" font-size="24" fill="#3F51B5">Project 3</text>
+  <rect x="270" y="570" width="320" height="170" rx="5" fill="#F5F5F5" />
+  <rect x="660" y="510" width="380" height="250" rx="10" fill="white" stroke="#3F51B5" stroke-width="2" />
+  <text x="690" y="550" font-family="Arial" font-size="24" fill="#3F51B5">Project 4</text>
+  <rect x="690" y="570" width="320" height="170" rx="5" fill="#F5F5F5" />
+</svg>

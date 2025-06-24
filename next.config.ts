@@ -5,7 +5,48 @@ const withPWA = withPWAInit({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
   register: true,
-  skipWaiting: true,
+
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: false,
+
+  workboxOptions: {
+    runtimeCaching: [
+      {
+        urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'google-fonts',
+          expiration: {
+            maxEntries: 20,
+            maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+          }
+        }
+      },
+      {
+        urlPattern: /\/_next\/image\?url=.+$/i,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'next-image',
+          expiration: {
+            maxEntries: 100,
+            maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+          }
+        }
+      },
+      {
+        urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'static-images',
+          expiration: {
+            maxEntries: 100,
+            maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+          }
+        }
+      }
+    ]
+  }
 });
 
 
