@@ -13,6 +13,23 @@ const withPWA = withPWAInit({
   workboxOptions: {
     runtimeCaching: [
       {
+        urlPattern: '/',
+        handler: 'NetworkFirst',
+        options: {
+          cacheName: 'start-url',
+          plugins: [
+            {
+              cacheWillUpdate: ({ request, response }) => {
+                if (response && response.status === 200) {
+                  return Promise.resolve(response);
+                }
+                return Promise.resolve(null);
+              },
+            },
+          ],
+        },
+      },
+      {
         urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
         handler: 'CacheFirst',
         options: {
@@ -55,6 +72,12 @@ const nextConfig: NextConfig = {
   webpack: (config, { isServer }) => {
     config.resolve.alias['handlebars'] = 'handlebars/dist/handlebars.min.js';
     return config;
+  },
+  // Add Turbopack configuration to match webpack configuration
+  turbopack: {
+    resolveAlias: {
+      'handlebars': 'handlebars/dist/handlebars.min.js'
+    }
   },
   typescript: {
     ignoreBuildErrors: true,

@@ -24,6 +24,8 @@ export default function usePwaInstall() {
       e.preventDefault();
       // Stash the event so it can be triggered later
       setInstallPrompt(e as BeforeInstallPromptEvent);
+      // Log a helpful message instead of the confusing error
+      console.log('Install prompt captured and ready to be triggered by user interaction');
     };
 
     // Listen for app installed event

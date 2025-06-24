@@ -21,7 +21,7 @@ export default function InstallButton({ className }: InstallButtonProps) {
       onClick={() => promptInstall()}
     >
       <Download className="mr-2 h-4 w-4" />
-      ऐप इंस्टॉल करें
+      Install App
     </Button>
   );
 }

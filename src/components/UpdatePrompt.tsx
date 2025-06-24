@@ -13,12 +13,12 @@ export default function UpdatePrompt() {
   useEffect(() => {
     if (updateAvailable) {
       toast({
-        title: "नया अपडेट उपलब्ध है",
-        description: "बेहतर अनुभव के लिए अपडेट करें",
+        title: "New update available",
+        description: "Update for a better experience",
         action: (
           <Button variant="outline" size="sm" onClick={applyUpdate}>
             <RefreshCw className="mr-2 h-4 w-4" />
-            अपडेट करें
+            Update
           </Button>
         ),
         duration: 0, // Don't auto-dismiss
