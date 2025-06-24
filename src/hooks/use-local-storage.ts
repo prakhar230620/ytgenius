@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { get, set, createStore } from 'idb-keyval';
 
 /**
- * A hook to manage state that is persisted in IndexedDB.
+ * A hook to manage state that is persisted in IndexedDB for large storage capacity.
  * It ensures that data is loaded on startup and saved on any change.
  * @param key The key for the data in IndexedDB.
  * @param initialValue The initial value to use if none is found in storage.
