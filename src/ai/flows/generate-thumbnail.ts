@@ -17,7 +17,7 @@ const GenerateThumbnailInputSchema = z.object({
     .string()
     .optional()
     .describe(
-      "A user-provided image as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "A user-provided image for character or style reference, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
   aspectRatio: z.enum(['16:9', '9:16', '1:1']).describe('The desired aspect ratio for the image.'),
 });
@@ -49,7 +49,8 @@ Analyze the user's request, considering the following principles of great thumbn
 5.  **Contrast and Color:** Use vibrant, contrasting colors to make the thumbnail pop.
 
 {{#if image}}
-Use the following image as a base for your design. You can modify it, enhance it, or use it as inspiration.
+A reference image is provided. **If the user's prompt describes a scene or action, place the character from this reference image into that scene.** You MUST maintain the character's appearance, including their face, hair, and clothing style, with high fidelity. The goal is character consistency across multiple images.
+Base your new design on this character and the user's prompt.
 {{media url=image}}
 {{/if}}
 

@@ -8,25 +8,28 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Wand2, Upload, X } from 'lucide-react';
 import Image from 'next/image';
-import { type AspectRatio } from '@/types';
+import { type AspectRatio, type Character } from '@/types';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 interface BackgroundImageGeneratorProps {
-  onGenerate: (prompt: string, image: string | undefined, aspectRatio: AspectRatio) => void;
+  onGenerate: (prompt: string, image: string | undefined, aspectRatio: AspectRatio, characterImage: string | undefined) => void;
   isLoading: boolean;
+  characters: Character[];
 }
 
-export default function BackgroundImageGenerator({ onGenerate, isLoading }: BackgroundImageGeneratorProps) {
+export default function BackgroundImageGenerator({ onGenerate, isLoading, characters }: BackgroundImageGeneratorProps) {
   const [prompt, setPrompt] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
+  const [selectedCharacterId, setSelectedCharacterId] = useState<string>('none');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
+      setSelectedCharacterId('none');
       const reader = new FileReader();
       reader.onloadend = () => {
         setImageBase64(reader.result as string);
@@ -35,8 +38,14 @@ export default function BackgroundImageGenerator({ onGenerate, isLoading }: Back
     }
   };
 
+  const handleCharacterChange = (characterId: string) => {
+    setSelectedCharacterId(characterId);
+    if (characterId !== 'none') {
+        handleRemoveImage();
+    }
+  }
+
   const handleRemoveImage = () => {
-    setImageFile(null);
     setImageBase64(null);
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -45,8 +54,9 @@ export default function BackgroundImageGenerator({ onGenerate, isLoading }: Back
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (prompt.trim() || imageBase64) {
-      onGenerate(prompt, imageBase64 ?? undefined, aspectRatio);
+    const characterImage = characters.find(c => c.id === selectedCharacterId)?.referenceImageUrl;
+    if (prompt.trim() || imageBase64 || characterImage) {
+      onGenerate(prompt, imageBase64 ?? undefined, aspectRatio, characterImage);
     }
   };
 
@@ -54,7 +64,7 @@ export default function BackgroundImageGenerator({ onGenerate, isLoading }: Back
     <Card>
       <CardHeader>
         <CardTitle className="font-headline">Generate Background Image</CardTitle>
-        <CardDescription>Describe the background you want, or upload a reference image to guide the AI.</CardDescription>
+        <CardDescription>Describe the background, use a character, or upload a reference image to guide the AI.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -80,25 +90,45 @@ export default function BackgroundImageGenerator({ onGenerate, isLoading }: Back
               </div>
             </RadioGroup>
           </div>
+          
+          <div className="space-y-2">
+            <Label>Use Saved Character (Optional)</Label>
+            <Select value={selectedCharacterId} onValueChange={handleCharacterChange} disabled={isLoading}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Select a character..." />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="none">None - Use custom image or prompt only</SelectItem>
+                    {characters.map(character => (
+                        <SelectItem key={character.id} value={character.id}>
+                            <div className="flex items-center gap-2">
+                                <Image src={character.referenceImageUrl} alt={character.name} width={24} height={24} className="rounded-full object-cover w-6 h-6" />
+                                <span>{character.name}</span>
+                            </div>
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+          </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bg-image-upload">Reference Image (Optional)</Label>
+            <Label htmlFor="bg-image-upload">Or Upload a Reference Image (Optional)</Label>
             {imageBase64 ? (
               <div className="relative w-full max-w-sm">
                 <Image src={imageBase64} alt="Preview" width={320} height={180} className="rounded-md object-cover aspect-video bg-muted" />
-                <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage} type="button">
+                <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage} type="button" disabled={isLoading}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
                 <div className="flex items-center justify-center w-full">
-                    <label htmlFor="bg-image-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted/50 transition-colors">
+                    <label htmlFor="bg-image-upload" className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg bg-card ${isLoading || selectedCharacterId !== 'none' ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-muted/50 transition-colors'}`}>
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
                             <Upload className="w-8 h-8 mb-3 text-muted-foreground" />
                             <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
                             <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP</p>
                         </div>
-                        <Input id="bg-image-upload" type="file" className="hidden" onChange={handleImageChange} accept="image/png, image/jpeg, image/webp" ref={fileInputRef} disabled={isLoading} />
+                        <Input id="bg-image-upload" type="file" className="hidden" onChange={handleImageChange} accept="image/png, image/jpeg, image/webp" ref={fileInputRef} disabled={isLoading || selectedCharacterId !== 'none'} />
                     </label>
                 </div> 
             )}
@@ -114,7 +144,7 @@ export default function BackgroundImageGenerator({ onGenerate, isLoading }: Back
               disabled={isLoading}
             />
           </div>
-          <Button type="submit" disabled={isLoading || (!prompt.trim() && !imageBase64)} className="w-full sm:w-auto">
+          <Button type="submit" disabled={isLoading || (!prompt.trim() && !imageBase64 && selectedCharacterId === 'none')} className="w-full sm:w-auto">
             {isLoading ? (
               <>
                 <div className="w-4 h-4 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />

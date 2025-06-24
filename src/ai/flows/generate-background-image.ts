@@ -17,7 +17,7 @@ const GenerateBackgroundImageInputSchema = z.object({
     .string()
     .optional()
     .describe(
-      "An optional reference image as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "An optional reference image for a character or style, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
   aspectRatio: z.enum(['16:9', '9:16', '1:1']).describe('The desired aspect ratio for the image.'),
 });
@@ -38,6 +38,25 @@ export async function generateBackgroundImage(
   return generateBackgroundImageFlow(input);
 }
 
+const generateBackgroundImagePrompt = ai.definePrompt({
+  name: 'generateBackgroundImagePrompt',
+  input: { schema: GenerateBackgroundImageInputSchema },
+  prompt: `You are a professional graphic designer specializing in creating stunning, high-quality background images for YouTube videos. Your goal is to create a visually appealing, non-distracting, and thematically appropriate background that enhances the main content of the video.
+
+The generated image should be beautiful and engaging but subtle enough not to overpower a presenter or on-screen text.
+
+{{#if image}}
+A reference image is provided. **If the user's prompt describes a scene or action, place the character from this reference image into that scene.** You MUST maintain the character's appearance, including their face, hair, and clothing style, with high fidelity. The goal is character consistency across multiple images. Use this character as the subject for the background image.
+{{media url=image}}
+{{/if}}
+
+{{#if prompt}}
+User's detailed request: {{{prompt}}}
+{{/if}}
+
+Generate a high-resolution background image with a {{aspectRatio}} aspect ratio.`,
+});
+
 const generateBackgroundImageFlow = ai.defineFlow(
   {
     name: 'generateBackgroundImageFlow',
@@ -48,17 +67,12 @@ const generateBackgroundImageFlow = ai.defineFlow(
     if (!input.prompt && !input.image) {
       throw new Error('Either a prompt or an image must be provided.');
     }
-
-    const systemPrompt = `You are a professional graphic designer specializing in creating stunning, high-quality background images for YouTube videos. Your goal is to create a visually appealing, non-distracting, and thematically appropriate background that enhances the main content of the video. Analyze the user's request carefully. Generate a high-resolution background image suitable for a ${input.aspectRatio} aspect ratio. The image should be beautiful and engaging but subtle enough not to overpower a presenter or on-screen text.`;
-
-    const userPromptParts = [
-      ...(input.image ? [{media: {url: input.image}}] : []),
-      ...(input.prompt ? [{text: `User's detailed request: ${input.prompt}`}] : []),
-    ];
+    
+    const renderedPrompt = await generateBackgroundImagePrompt.render(input);
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: [{text: systemPrompt}, ...userPromptParts],
+      prompt: renderedPrompt.prompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
       },

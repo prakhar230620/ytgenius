@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { type Project, type Asset, type AspectRatio } from '@/types';
+import { type Project, type Asset, type AspectRatio, type Character } from '@/types';
 import { generateBackgroundImage } from '@/ai/flows/generate-background-image';
 import { generateThumbnail } from '@/ai/flows/generate-thumbnail';
 import { useToast } from "@/hooks/use-toast";
 import BackgroundImageGenerator from './BackgroundImageGenerator';
 import ThumbnailGenerator from './ThumbnailGenerator';
 import AssetGrid from './AssetGrid';
+import { CharacterManager } from './CharacterManager';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { Button } from './ui/button';
 import { ArrowLeft, Trash2 } from 'lucide-react';
@@ -24,51 +25,71 @@ export default function ProjectView({ project, updateProject, deleteProject, onG
   const [isBgLoading, setIsBgLoading] = useState(false);
   const [isThumbLoading, setIsThumbLoading] = useState(false);
   const { toast } = useToast();
+  
+  const projectCharacters = project.characters || [];
 
-  const handleGenerateBackground = async (prompt: string, image: string | undefined, aspectRatio: AspectRatio) => {
-    setIsBgLoading(true);
-    try {
-      const result = await generateBackgroundImage({ prompt, image, aspectRatio });
-      const newAsset: Asset = {
-        id: new Date().toISOString(),
-        type: 'background',
-        dataUrl: result.backgroundImageDataUri,
-        prompt,
-        createdAt: new Date().toISOString(),
-        aspectRatio,
-      };
-      updateProject({ ...project, assets: [newAsset, ...project.assets] });
-      toast({ title: "Success!", description: "Background image generated." });
-    } catch (error) {
-      console.error(error);
-      toast({ variant: "destructive", title: "Error", description: "Failed to generate background image." });
-    } finally {
-      setIsBgLoading(false);
-    }
+  const addCharacter = (character: Omit<Character, 'id' | 'createdAt'>) => {
+    const newCharacter: Character = {
+      ...character,
+      id: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    };
+    const updatedProject = {
+      ...project,
+      characters: [newCharacter, ...projectCharacters],
+    };
+    updateProject(updatedProject);
+    toast({ title: "Character Saved!", description: "The new character has been added." });
   };
 
-  const handleGenerateThumbnail = async (prompt: string, image: string | undefined, aspectRatio: AspectRatio) => {
-    setIsThumbLoading(true);
-    try {
-      const result = await generateThumbnail({ prompt, image, aspectRatio });
-      const newAsset: Asset = {
-        id: new Date().toISOString(),
-        type: 'thumbnail',
-        dataUrl: result.thumbnail,
-        prompt,
-        createdAt: new Date().toISOString(),
-        aspectRatio,
-      };
-      updateProject({ ...project, assets: [newAsset, ...project.assets] });
-      toast({ title: "Success!", description: "Thumbnail generated." });
-    } catch (error) {
-      console.error(error);
-      toast({ variant: "destructive", title: "Error", description: "Failed to generate thumbnail." });
-    } finally {
-      setIsThumbLoading(false);
-    }
+  const deleteCharacter = (characterId: string) => {
+    const updatedCharacters = projectCharacters.filter(c => c.id !== characterId);
+    const updatedProject = {
+      ...project,
+      characters: updatedCharacters,
+    };
+    updateProject(updatedProject);
+    toast({ title: "Character Deleted", description: "The character has been removed." });
   };
 
+  const handleGenerate = async (
+    generator: (input: any) => Promise<any>,
+    input: { prompt: string; image?: string; aspectRatio: AspectRatio, characterImage?: string },
+    type: 'background' | 'thumbnail',
+    setLoading: (loading: boolean) => void
+    ) => {
+    setLoading(true);
+    try {
+      const referenceImage = input.characterImage || input.image;
+      const result = await generator({ prompt: input.prompt, image: referenceImage, aspectRatio: input.aspectRatio });
+      const dataUrl = type === 'background' ? result.backgroundImageDataUri : result.thumbnail;
+      
+      const newAsset: Asset = {
+        id: new Date().toISOString(),
+        type: type,
+        dataUrl: dataUrl,
+        prompt: input.prompt,
+        createdAt: new Date().toISOString(),
+        aspectRatio: input.aspectRatio,
+      };
+      updateProject({ ...project, assets: [newAsset, ...project.assets] });
+      toast({ title: "Success!", description: `${type.charAt(0).toUpperCase() + type.slice(1)} generated.` });
+    } catch (error) {
+      console.error(error);
+      toast({ variant: "destructive", title: "Error", description: `Failed to generate ${type}.` });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleGenerateBackground = (prompt: string, image: string | undefined, aspectRatio: AspectRatio, characterImage: string | undefined) => {
+    handleGenerate(generateBackgroundImage, { prompt, image, aspectRatio, characterImage }, 'background', setIsBgLoading);
+  };
+  
+  const handleGenerateThumbnail = (prompt: string, image: string | undefined, aspectRatio: AspectRatio, characterImage: string | undefined) => {
+    handleGenerate(generateThumbnail, { prompt, image, aspectRatio, characterImage }, 'thumbnail', setIsThumbLoading);
+  };
+  
   const deleteAsset = (assetId: string) => {
     const updatedAssets = project.assets.filter(asset => asset.id !== assetId);
     updateProject({ ...project, assets: updatedAssets });
@@ -110,16 +131,24 @@ export default function ProjectView({ project, updateProject, deleteProject, onG
         </div>
       </div>
 
-      <Tabs defaultValue="background">
-        <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
-          <TabsTrigger value="background">Background Generator</TabsTrigger>
-          <TabsTrigger value="thumbnail">Thumbnail Generator</TabsTrigger>
+      <Tabs defaultValue="background" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 md:w-auto">
+          <TabsTrigger value="background">Backgrounds</TabsTrigger>
+          <TabsTrigger value="thumbnail">Thumbnails</TabsTrigger>
+          <TabsTrigger value="characters">Characters</TabsTrigger>
         </TabsList>
         <TabsContent value="background" className="mt-6">
-          <BackgroundImageGenerator onGenerate={handleGenerateBackground} isLoading={isBgLoading} />
+          <BackgroundImageGenerator onGenerate={handleGenerateBackground} isLoading={isBgLoading} characters={projectCharacters} />
         </TabsContent>
         <TabsContent value="thumbnail" className="mt-6">
-          <ThumbnailGenerator onGenerate={handleGenerateThumbnail} isLoading={isThumbLoading} />
+          <ThumbnailGenerator onGenerate={handleGenerateThumbnail} isLoading={isThumbLoading} characters={projectCharacters} />
+        </TabsContent>
+        <TabsContent value="characters" className="mt-6">
+           <CharacterManager 
+            characters={projectCharacters}
+            addCharacter={addCharacter}
+            deleteCharacter={deleteCharacter}
+          />
         </TabsContent>
       </Tabs>
 

@@ -50,6 +50,7 @@ export default function Home() {
       name,
       createdAt: id,
       assets: [],
+      characters: [],
     };
     setProjects(prev => ({ ...prev, [id]: newProject }));
     setActiveProjectId(id);
