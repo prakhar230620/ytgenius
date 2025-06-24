@@ -17,7 +17,7 @@ const GenerateBackgroundImageInputSchema = z.object({
     .string()
     .optional()
     .describe(
-      "An optional reference image for a character or style, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "An optional reference image for style or content, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
   aspectRatio: z.enum(['16:9', '9:16', '1:1']).describe('The desired aspect ratio for the image.'),
 });
@@ -54,10 +54,8 @@ const generateBackgroundImageFlow = ai.defineFlow(
 
     if (input.image) {
       promptParts.push(
-        `You are a professional illustrator creating a scene for a YouTube video. A reference image of a character is provided. Your most important task is **character consistency**.
-You MUST use the character from the reference image as the main subject. Replicate their appearance (face, hair, clothes, style) exactly.
-The user may describe a scene or setting. Place this character within that scene.
-The final image will be used as a background, so ensure the composition is balanced and visually appealing, but the character should be the focus.`
+        `You are a professional illustrator creating a scene for a YouTube video. A reference image is provided. Use it to guide the style, subject, or composition of the generated image.
+The final image will be used as a background, so ensure the composition is balanced and visually appealing.`
       );
       promptParts.push({media: {url: input.image}});
     } else {
@@ -71,7 +69,7 @@ The generated image should be beautiful and engaging but subtle enough not to ov
       promptParts.push(`User's detailed request: ${input.prompt}`);
     } else if (input.image) {
       promptParts.push(
-        `User's detailed request: A professional, high-quality scene featuring the provided character, suitable for a YouTube video background.`
+        `User's detailed request: A professional, high-quality scene based on the provided reference image, suitable for a YouTube video background.`
       );
     }
 

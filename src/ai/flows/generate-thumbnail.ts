@@ -17,7 +17,7 @@ const GenerateThumbnailInputSchema = z.object({
     .string()
     .optional()
     .describe(
-      "A user-provided image for character or style reference, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "A user-provided image for style or content reference, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
   aspectRatio: z.enum(['16:9', '9:16', '1:1']).describe('The desired aspect ratio for the image.'),
 });
@@ -63,11 +63,8 @@ Analyze the user's request, considering the following principles of great thumbn
 
     if (input.image) {
       promptParts.push(
-        `**CRITICAL INSTRUCTION: CHARACTER CONSISTENCY**
-A reference image of a character is provided. This is the most important part of the request.
-You MUST feature the character from this reference image as the central subject of the thumbnail.
-Replicate the character's appearance, including their face, hair, clothing, and overall style, with the highest possible fidelity.
-Place this exact character into the scene described by the user, ensuring the final image follows all the principles of a great, high-CTR thumbnail.`
+        `**Style Reference:**
+A reference image is provided. Use this image as inspiration for the style, color palette, and subject matter of the thumbnail. If it's a person, try to maintain a similar look. The goal is to create a compelling, high-CTR thumbnail based on the user's prompt and the provided visual reference.`
       );
       promptParts.push({media: {url: input.image}});
     }
@@ -76,7 +73,7 @@ Place this exact character into the scene described by the user, ensuring the fi
       promptParts.push(`User's specific instructions for the scene: ${input.prompt}`);
     } else if (input.image) {
       promptParts.push(
-        `User's specific instructions for the scene: Create a stunning, eye-catching thumbnail featuring the provided character.`
+        `User's specific instructions for the scene: Create a stunning, eye-catching thumbnail based on the provided reference image.`
       );
     }
 

@@ -9,17 +9,9 @@ export interface Asset {
   aspectRatio: AspectRatio;
 }
 
-export interface Character {
-  id: string;
-  name: string;
-  referenceImageUrl: string;
-  createdAt: string;
-}
-
 export interface Project {
   id:string;
   name: string;
   createdAt: string;
   assets: Asset[];
-  characters: Character[];
 }
