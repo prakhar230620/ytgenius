@@ -4,9 +4,10 @@ import Image from 'next/image';
 import { type Asset } from '@/types';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Trash2, Wallpaper, Image as ImageIcon } from 'lucide-react';
+import { Download, Trash2, Wallpaper, Image as ImageIcon, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { formatDistanceToNow } from 'date-fns';
 
 interface AssetCardProps {
@@ -28,21 +29,38 @@ export default function AssetCard({ asset, deleteAsset }: AssetCardProps) {
 
   return (
     <Card className="overflow-hidden flex flex-col group transition-all hover:shadow-xl animate-in fade-in zoom-in-95">
-      <div className="relative">
-        <Image
-          src={asset.dataUrl}
-          alt={asset.prompt}
-          width={400}
-          height={225}
-          className="aspect-video w-full object-cover bg-muted"
-        />
-        <div className="absolute top-2 right-2">
-            <Badge variant="secondary" className="capitalize">
-                {asset.type === 'background' ? <Wallpaper className="h-3 w-3 mr-1" /> : <ImageIcon className="h-3 w-3 mr-1" />}
-                {asset.type}
-            </Badge>
-        </div>
-      </div>
+      <Dialog>
+        <DialogTrigger asChild>
+          <div className="relative cursor-pointer">
+            <Image
+              src={asset.dataUrl}
+              alt={asset.prompt}
+              width={400}
+              height={225}
+              className="aspect-video w-full object-cover bg-muted"
+            />
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Eye className="h-10 w-10 text-white" />
+            </div>
+            <div className="absolute top-2 right-2">
+                <Badge variant="secondary" className="capitalize">
+                    {asset.type === 'background' ? <Wallpaper className="h-3 w-3 mr-1" /> : <ImageIcon className="h-3 w-3 mr-1" />}
+                    {asset.type}
+                </Badge>
+            </div>
+          </div>
+        </DialogTrigger>
+        <DialogContent className="max-w-5xl p-0 border-0 bg-transparent">
+            <Image
+              src={asset.dataUrl}
+              alt={asset.prompt}
+              width={1920}
+              height={1080}
+              className="w-full h-auto object-contain rounded-lg"
+            />
+        </DialogContent>
+      </Dialog>
+
       <CardContent className="p-4 flex-grow">
         <p className="text-sm text-muted-foreground truncate" title={asset.prompt}>
           {asset.prompt || "Generated from image"}
