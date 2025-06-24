@@ -4,10 +4,10 @@ import Image from 'next/image';
 import { type Asset } from '@/types';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Trash2, Wallpaper, Image as ImageIcon, Eye } from 'lucide-react';
+import { Download, Trash2, Wallpaper, Image as ImageIcon, Eye, ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { formatDistanceToNow } from 'date-fns';
 
 interface AssetCardProps {
@@ -54,13 +54,21 @@ export default function AssetCard({ asset, deleteAsset }: AssetCardProps) {
             <DialogHeader>
                 <DialogTitle className="sr-only">{asset.prompt || "Image Preview"}</DialogTitle>
             </DialogHeader>
-            <Image
-              src={asset.dataUrl}
-              alt={asset.prompt}
-              width={1920}
-              height={1080}
-              className="w-full h-auto object-contain rounded-lg"
-            />
+            <div className="relative">
+              <Image
+                src={asset.dataUrl}
+                alt={asset.prompt}
+                width={1920}
+                height={1080}
+                className="w-full h-auto object-contain rounded-lg"
+              />
+              <DialogClose asChild>
+                <Button variant="secondary" className="absolute top-4 left-4">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back
+                </Button>
+              </DialogClose>
+            </div>
         </DialogContent>
       </Dialog>
 
