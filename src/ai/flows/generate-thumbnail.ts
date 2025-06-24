@@ -36,32 +36,6 @@ export async function generateThumbnail(input: GenerateThumbnailInput): Promise<
   return generateThumbnailFlow(input);
 }
 
-const generateThumbnailPrompt = ai.definePrompt({
-  name: 'generateThumbnailPrompt',
-  input: {schema: GenerateThumbnailInputSchema},
-  prompt: `You are a world-class YouTube thumbnail designer. Your task is to create a visually stunning, high-impact thumbnail that maximizes click-through rate (CTR).
-
-Analyze the user's request, considering the following principles of great thumbnail design:
-1.  **Clarity and Readability:** Use bold, easy-to-read fonts. Keep text minimal and impactful.
-2.  **Emotional Impact:** Convey a strong emotion (e.g., surprise, curiosity, excitement) through imagery and composition.
-3.  **Visual Hierarchy:** Guide the viewer's eye to the most important elements (usually a face, a key object, or text).
-4.  **Brand Consistency:** If a style or reference image is provided, maintain that visual identity.
-5.  **Contrast and Color:** Use vibrant, contrasting colors to make the thumbnail pop.
-
-{{#if image}}
-A reference image is provided. **If the user's prompt describes a scene or action, place the character from this reference image into that scene.** You MUST maintain the character's appearance, including their face, hair, and clothing style, with high fidelity. The goal is character consistency across multiple images.
-Base your new design on this character and the user's prompt.
-{{media url=image}}
-{{/if}}
-
-{{#if prompt}}
-Follow these specific instructions from the user: {{{prompt}}}
-{{/if}}
-
-Generate a compelling thumbnail with a {{aspectRatio}} aspect ratio. Ensure it's eye-catching even at small sizes.
-`,
-});
-
 const generateThumbnailFlow = ai.defineFlow(
   {
     name: 'generateThumbnailFlow',
@@ -74,17 +48,42 @@ const generateThumbnailFlow = ai.defineFlow(
       throw new Error('Either a prompt or an image must be provided.');
     }
 
-    // The model requires a text prompt, even if only an image is provided.
-    // If we have an image but no text prompt, create a default one.
-    if (input.image && !input.prompt?.trim()) {
-      input.prompt = "A stunning, eye-catching thumbnail for a YouTube video. Use the provided image as a reference for character or style.";
+    const promptParts: (string | {media: {url: string}})[] = [];
+
+    promptParts.push(
+      `You are a world-class YouTube thumbnail designer. Your task is to create a visually stunning, high-impact thumbnail that maximizes click-through rate (CTR).
+
+Analyze the user's request, considering the following principles of great thumbnail design:
+1.  **Clarity and Readability:** Use bold, easy-to-read fonts. Keep text minimal and impactful.
+2.  **Emotional Impact:** Convey a strong emotion (e.g., surprise, curiosity, excitement) through imagery and composition.
+3.  **Visual Hierarchy:** Guide the viewer's eye to the most important elements (usually a face, a key object, or text).
+4.  **Brand Consistency:** If a style or reference image is provided, maintain that visual identity.
+5.  **Contrast and Color:** Use vibrant, contrasting colors to make the thumbnail pop.`
+    );
+    
+    if (input.image) {
+      promptParts.push(
+        `A reference image is provided. **If the user's prompt describes a scene or action, place the character from this reference image into that scene.** You MUST maintain the character's appearance, including their face, hair, and clothing style, with high fidelity. The goal is character consistency across multiple images.
+Base your new design on this character and the user's prompt.`
+      );
+      promptParts.push({media: {url: input.image}});
     }
 
-    const renderedPrompt = await generateThumbnailPrompt.render(input);
+    if (input.prompt?.trim()) {
+      promptParts.push(`Follow these specific instructions from the user: ${input.prompt}`);
+    } else if (input.image) {
+      promptParts.push(
+        `Follow these specific instructions from the user: A stunning, eye-catching thumbnail for a YouTube video. Use the provided image as a reference for character or style.`
+      );
+    }
+
+    promptParts.push(
+      `Generate a compelling thumbnail with a ${input.aspectRatio} aspect ratio. Ensure it's eye-catching even at small sizes.`
+    );
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: renderedPrompt.prompt,
+      prompt: promptParts,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
       },
