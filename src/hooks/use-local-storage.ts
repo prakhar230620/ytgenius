@@ -1,68 +1,54 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
+import { get, set, createStore } from 'idb-keyval';
+
+// Using IndexedDB for larger, more persistent storage.
+// We create a custom store within the IndexedDB database for this app.
+const customStore = createStore('ytgenius-db', 'ytgenius-store');
 
 function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
-  // Lazy state initialization to read from localStorage only on the client and only once.
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    // Prevent execution on server
-    if (typeof window === 'undefined') {
-      return initialValue;
-    }
-    try {
-      const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      console.warn(`Error reading localStorage key “${key}”:`, error);
-      return initialValue;
-    }
-  });
+  const [storedValue, setStoredValue] = useState<T>(initialValue);
 
-  // The setter function. It's wrapped in useCallback to ensure it's stable
-  // and doesn't cause unnecessary re-renders in consumer components.
+  // Effect to read the value from IndexedDB when the component mounts.
+  // This runs only on the client.
+  useEffect(() => {
+    get<T>(key, customStore)
+      .then(val => {
+        // If a value is found in IndexedDB, update the state.
+        if (val !== undefined && val !== null) {
+          setStoredValue(val);
+        }
+      })
+      .catch(err => {
+        console.warn(`Error reading from IndexedDB key “${key}”:`, err);
+      });
+  }, [key]);
+
+  // A stable setter function that persists data to IndexedDB.
   const setValue = useCallback(
     (value: T | ((val: T) => T)) => {
       try {
-        // Use the functional update form of setState to get the latest state.
-        setStoredValue((prevValue) => {
-          const valueToStore = value instanceof Function ? value(prevValue) : value;
+        // Use a functional update to get the latest state value, ensuring stability.
+        setStoredValue(currentValue => {
+          const valueToStore = value instanceof Function ? value(currentValue) : value;
           
-          if (typeof window !== 'undefined') {
-            window.localStorage.setItem(key, JSON.stringify(valueToStore));
-            // Dispatch event to sync tabs.
-            window.dispatchEvent(new Event("local-storage"));
-          }
-          
+          // Asynchronously set the value in IndexedDB.
+          set(key, valueToStore, customStore).catch(err => {
+            console.warn(`Error writing to IndexedDB key “${key}”:`, err);
+          });
+
           return valueToStore;
         });
       } catch (error) {
-        console.warn(`Error setting localStorage key “${key}”:`, error);
+        console.warn(`Error in setValue for IndexedDB key “${key}”:`, error);
       }
     },
-    [key]
+    [key] // The key is the only dependency, so this function is stable.
   );
 
-  // Effect to listen for changes in other tabs.
-  useEffect(() => {
-    const handleStorageChange = () => {
-      try {
-        if (typeof window !== 'undefined') {
-          const item = window.localStorage.getItem(key);
-          setStoredValue(item ? JSON.parse(item) : initialValue);
-        }
-      } catch (error) {
-        console.warn(`Error reading localStorage key “${key}”:`, error);
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("local-storage", handleStorageChange);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("local-storage", handleStorageChange);
-    };
-  }, [key, initialValue]);
+  // Note: Cross-tab synchronization is more complex with IndexedDB.
+  // This implementation focuses on providing larger storage and fixing the render loop.
 
   return [storedValue, setValue];
 }
