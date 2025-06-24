@@ -24,16 +24,22 @@ export default function ProjectView({ project, updateProject, deleteProject, onG
   const [isBgLoading, setIsBgLoading] = useState(false);
   const [isThumbLoading, setIsThumbLoading] = useState(false);
   const { toast } = useToast();
+  const MAX_PREFERENCES = 5; // Maximum number of preferences allowed
 
   const handleGenerate = async (
     generator: (input: any) => Promise<any>,
-    input: { prompt: string; image?: string; aspectRatio: AspectRatio },
+    input: { prompt: string; image?: string; aspectRatio: AspectRatio; referenceImages?: string[] },
     type: 'background' | 'thumbnail',
     setLoading: (loading: boolean) => void
     ) => {
     setLoading(true);
     try {
-      const result = await generator({ prompt: input.prompt, image: input.image, aspectRatio: input.aspectRatio });
+      const result = await generator({ 
+        prompt: input.prompt, 
+        image: input.image, 
+        referenceImages: input.referenceImages,
+        aspectRatio: input.aspectRatio 
+      });
       const dataUrl = type === 'background' ? result.backgroundImageDataUri : result.thumbnail;
       
       const newAsset: Asset = {
@@ -54,12 +60,12 @@ export default function ProjectView({ project, updateProject, deleteProject, onG
     }
   };
   
-  const handleGenerateBackground = (prompt: string, image: string | undefined, aspectRatio: AspectRatio) => {
-    handleGenerate(generateBackgroundImage, { prompt, image, aspectRatio }, 'background', setIsBgLoading);
+  const handleGenerateBackground = (prompt: string, image: string | undefined, aspectRatio: AspectRatio, referenceImages?: string[]) => {
+    handleGenerate(generateBackgroundImage, { prompt, image, aspectRatio, referenceImages }, 'background', setIsBgLoading);
   };
   
-  const handleGenerateThumbnail = (prompt: string, image: string | undefined, aspectRatio: AspectRatio) => {
-    handleGenerate(generateThumbnail, { prompt, image, aspectRatio }, 'thumbnail', setIsThumbLoading);
+  const handleGenerateThumbnail = (prompt: string, image: string | undefined, aspectRatio: AspectRatio, referenceImages?: string[]) => {
+    handleGenerate(generateThumbnail, { prompt, image, aspectRatio, referenceImages }, 'thumbnail', setIsThumbLoading);
   };
   
   const deleteAsset = (assetId: string) => {
@@ -67,6 +73,29 @@ export default function ProjectView({ project, updateProject, deleteProject, onG
     updateProject({ ...project, assets: updatedAssets });
     toast({ title: "Asset deleted", description: "The asset has been removed from your project." });
   };
+  
+  const togglePreference = (assetId: string) => {
+    const updatedAssets = project.assets.map(asset => {
+      if (asset.id === assetId) {
+        return { ...asset, isPreference: !asset.isPreference };
+      }
+      return asset;
+    });
+    updateProject({ ...project, assets: updatedAssets });
+    
+    const asset = project.assets.find(a => a.id === assetId);
+    const isNowPreference = !asset?.isPreference;
+    
+    toast({ 
+      title: isNowPreference ? "Added to preferences" : "Removed from preferences",
+      description: isNowPreference 
+        ? "This asset will be used as a reference for future generations." 
+        : "This asset will no longer be used as a reference."
+    });
+  };
+  
+  // Calculate the number of preference assets
+  const preferenceCount = project.assets.filter(asset => asset.isPreference).length;
 
   return (
     <div className="space-y-8">
@@ -109,14 +138,28 @@ export default function ProjectView({ project, updateProject, deleteProject, onG
           <TabsTrigger value="thumbnail">Thumbnails</TabsTrigger>
         </TabsList>
         <TabsContent value="background" className="mt-6">
-          <BackgroundImageGenerator onGenerate={handleGenerateBackground} isLoading={isBgLoading} />
+          <BackgroundImageGenerator 
+            onGenerate={handleGenerateBackground} 
+            isLoading={isBgLoading} 
+            preferenceAssets={project.assets.filter(asset => asset.isPreference)}
+          />
         </TabsContent>
         <TabsContent value="thumbnail" className="mt-6">
-          <ThumbnailGenerator onGenerate={handleGenerateThumbnail} isLoading={isThumbLoading} />
+          <ThumbnailGenerator 
+            onGenerate={handleGenerateThumbnail} 
+            isLoading={isThumbLoading} 
+            preferenceAssets={project.assets.filter(asset => asset.isPreference)}
+          />
         </TabsContent>
       </Tabs>
 
-      <AssetGrid assets={project.assets} deleteAsset={deleteAsset} />
+      <AssetGrid 
+        assets={project.assets} 
+        deleteAsset={deleteAsset} 
+        togglePreference={togglePreference}
+        preferenceCount={preferenceCount}
+        maxPreferences={MAX_PREFERENCES}
+      />
     </div>
   );
 }

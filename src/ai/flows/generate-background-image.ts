@@ -19,6 +19,12 @@ const GenerateBackgroundImageInputSchema = z.object({
     .describe(
       "An optional reference image for style or content, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
+  referenceImages: z
+    .array(z.string())
+    .optional()
+    .describe(
+      "Optional additional reference images for style or content, as data URIs that must include a MIME type and use Base64 encoding. Expected format: ['data:<mimetype>;base64,<encoded_data>', ...]. Maximum 5 images."
+    ),
   aspectRatio: z.enum(['16:9', '9:16', '1:1']).describe('The desired aspect ratio for the image.'),
 });
 export type GenerateBackgroundImageInput = z.infer<typeof GenerateBackgroundImageInputSchema>;
@@ -46,18 +52,37 @@ const generateBackgroundImageFlow = ai.defineFlow(
   },
   async input => {
     // Validate that at least one input is provided.
-    if (!input.prompt?.trim() && !input.image) {
-      throw new Error('Either a prompt or an image must be provided.');
+    if (!input.prompt?.trim() && !input.image && (!input.referenceImages || input.referenceImages.length === 0)) {
+      throw new Error('Either a prompt or at least one reference image must be provided.');
+    }
+    
+    // Limit the number of reference images to 5
+    const referenceImages = input.referenceImages || [];
+    if (referenceImages.length > 5) {
+      throw new Error('Maximum 5 reference images are allowed.');
     }
 
     const promptParts: (string | {media: {url: string}})[] = [];
-
+    
+    // Combine primary image and reference images
+    const allReferenceImages = [];
     if (input.image) {
+      allReferenceImages.push(input.image);
+    }
+    if (input.referenceImages && input.referenceImages.length > 0) {
+      allReferenceImages.push(...input.referenceImages);
+    }
+
+    if (allReferenceImages.length > 0) {
       promptParts.push(
-        `You are a professional illustrator creating a scene for a YouTube video. A reference image is provided. Use it to guide the style, subject, or composition of the generated image.
+        `You are a professional illustrator creating a scene for a YouTube video. ${allReferenceImages.length > 1 ? 'Multiple reference images are' : 'A reference image is'} provided. Use ${allReferenceImages.length > 1 ? 'them' : 'it'} to guide the style, subject, or composition of the generated image.
 The final image will be used as a background, so ensure the composition is balanced and visually appealing.`
       );
-      promptParts.push({media: {url: input.image}});
+      
+      // Add all reference images to the prompt
+      for (const refImage of allReferenceImages) {
+        promptParts.push({media: {url: refImage}});
+      }
     } else {
       promptParts.push(
         `You are a professional graphic designer specializing in creating stunning, high-quality background images for YouTube videos. Your goal is to create a visually appealing, non-distracting, and thematically appropriate background that enhances the main content of the video.
@@ -67,9 +92,9 @@ The generated image should be beautiful and engaging but subtle enough not to ov
 
     if (input.prompt?.trim()) {
       promptParts.push(`User's detailed request: ${input.prompt}`);
-    } else if (input.image) {
+    } else if (allReferenceImages.length > 0) {
       promptParts.push(
-        `User's detailed request: A professional, high-quality scene based on the provided reference image, suitable for a YouTube video background.`
+        `User's detailed request: A professional, high-quality scene based on the provided reference ${allReferenceImages.length > 1 ? 'images' : 'image'}, suitable for a YouTube video background.`
       );
     }
 
@@ -79,7 +104,7 @@ The generated image should be beautiful and engaging but subtle enough not to ov
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: promptParts,
+      prompt: promptParts.map(part => typeof part === 'string' ? { text: part } : part),
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
       },

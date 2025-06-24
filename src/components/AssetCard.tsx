@@ -4,18 +4,22 @@ import Image from 'next/image';
 import { type Asset } from '@/types';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Trash2, Wallpaper, Image as ImageIcon, Eye, ArrowLeft, Ratio } from 'lucide-react';
+import { Download, Trash2, Wallpaper, Image as ImageIcon, Eye, ArrowLeft, Ratio, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { formatDistanceToNow } from 'date-fns';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface AssetCardProps {
   asset: Asset;
   deleteAsset: (assetId: string) => void;
+  togglePreference?: (assetId: string) => void;
+  preferenceCount?: number;
+  maxPreferences?: number;
 }
 
-export default function AssetCard({ asset, deleteAsset }: AssetCardProps) {
+export default function AssetCard({ asset, deleteAsset, togglePreference, preferenceCount = 0, maxPreferences = 5 }: AssetCardProps) {
   const downloadImage = () => {
     const link = document.createElement('a');
     link.href = asset.dataUrl;
@@ -91,6 +95,30 @@ export default function AssetCard({ asset, deleteAsset }: AssetCardProps) {
         <p className="text-xs text-muted-foreground/80 mt-2">{formattedDate}</p>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex justify-end gap-2">
+        {togglePreference && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant={asset.isPreference ? "secondary" : "ghost"} 
+                  size="icon" 
+                  onClick={() => togglePreference(asset.id)}
+                  disabled={!asset.isPreference && preferenceCount >= maxPreferences}
+                >
+                  <Star className={`h-4 w-4 ${asset.isPreference ? "fill-current" : ""}`} />
+                  <span className="sr-only">{asset.isPreference ? "Remove from preferences" : "Add to preferences"}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {asset.isPreference 
+                  ? "Remove from preferences" 
+                  : preferenceCount >= maxPreferences 
+                    ? `Maximum ${maxPreferences} preferences allowed` 
+                    : "Add to preferences"}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
         <Button variant="ghost" size="icon" onClick={downloadImage}>
           <Download className="h-4 w-4" />
           <span className="sr-only">Download</span>

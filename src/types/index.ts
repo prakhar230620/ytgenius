@@ -7,6 +7,7 @@ export interface Asset {
   prompt: string;
   createdAt: string;
   aspectRatio: AspectRatio;
+  isPreference?: boolean;
 }
 
 export interface Project {
