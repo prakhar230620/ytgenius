@@ -60,22 +60,23 @@ Analyze the user's request, considering the following principles of great thumbn
 4.  **Brand Consistency:** If a style or reference image is provided, maintain that visual identity.
 5.  **Contrast and Color:** Use vibrant, contrasting colors to make the thumbnail pop.`
     );
-    
+
     if (input.image) {
       promptParts.push(
-        `A reference image of a character is provided. Your primary goal is **character consistency**.
-You MUST use the character from this reference image as the main subject of the thumbnail.
+        `**CRITICAL INSTRUCTION: CHARACTER CONSISTENCY**
+A reference image of a character is provided. This is the most important part of the request.
+You MUST feature the character from this reference image as the central subject of the thumbnail.
 Replicate the character's appearance, including their face, hair, clothing, and overall style, with the highest possible fidelity.
-If the user provides a prompt describing a scene or action, place this exact character into that scene while following the thumbnail design principles.`
+Place this exact character into the scene described by the user, ensuring the final image follows all the principles of a great, high-CTR thumbnail.`
       );
       promptParts.push({media: {url: input.image}});
     }
 
     if (input.prompt?.trim()) {
-      promptParts.push(`Follow these specific instructions from the user: ${input.prompt}`);
+      promptParts.push(`User's specific instructions for the scene: ${input.prompt}`);
     } else if (input.image) {
       promptParts.push(
-        `Follow these specific instructions from the user: A stunning, eye-catching thumbnail for a YouTube video. Use the provided image as a reference for character or style.`
+        `User's specific instructions for the scene: Create a stunning, eye-catching thumbnail featuring the provided character.`
       );
     }
 

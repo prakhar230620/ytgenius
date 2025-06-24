@@ -52,32 +52,31 @@ const generateBackgroundImageFlow = ai.defineFlow(
 
     const promptParts: (string | {media: {url: string}})[] = [];
 
-    promptParts.push(
-      `You are a professional graphic designer specializing in creating stunning, high-quality background images for YouTube videos. Your goal is to create a visually appealing, non-distracting, and thematically appropriate background that enhances the main content of the video.
-
-The generated image should be beautiful and engaging but subtle enough not to overpower a presenter or on-screen text.`
-    );
-
     if (input.image) {
       promptParts.push(
-        `A reference image of a character is provided. Your primary goal is **character consistency**.
-You MUST use the character from this reference image as the main subject.
-Replicate the character's appearance, including their face, hair, clothing, and overall style, with the highest possible fidelity.
-If the user provides a prompt describing a scene or action, place this exact character into that scene.`
+        `You are a professional illustrator creating a scene for a YouTube video. A reference image of a character is provided. Your most important task is **character consistency**.
+You MUST use the character from the reference image as the main subject. Replicate their appearance (face, hair, clothes, style) exactly.
+The user may describe a scene or setting. Place this character within that scene.
+The final image will be used as a background, so ensure the composition is balanced and visually appealing, but the character should be the focus.`
       );
       promptParts.push({media: {url: input.image}});
+    } else {
+      promptParts.push(
+        `You are a professional graphic designer specializing in creating stunning, high-quality background images for YouTube videos. Your goal is to create a visually appealing, non-distracting, and thematically appropriate background that enhances the main content of the video.
+The generated image should be beautiful and engaging but subtle enough not to overpower a presenter or on-screen text.`
+      );
     }
 
     if (input.prompt?.trim()) {
       promptParts.push(`User's detailed request: ${input.prompt}`);
     } else if (input.image) {
       promptParts.push(
-        `User's detailed request: A professional, high-quality background image suitable for a YouTube video. Use the provided image as a reference for character or style.`
+        `User's detailed request: A professional, high-quality scene featuring the provided character, suitable for a YouTube video background.`
       );
     }
-    
+
     promptParts.push(
-      `Generate a high-resolution background image with a ${input.aspectRatio} aspect ratio.`
+      `Generate a high-resolution image with a ${input.aspectRatio} aspect ratio.`
     );
 
     const {media} = await ai.generate({
