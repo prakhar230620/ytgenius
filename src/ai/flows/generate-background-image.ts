@@ -60,7 +60,10 @@ The generated image should be beautiful and engaging but subtle enough not to ov
 
     if (input.image) {
       promptParts.push(
-        `A reference image is provided. **If the user's prompt describes a scene or action, place the character from this reference image into that scene.** You MUST maintain the character's appearance, including their face, hair, and clothing style, with high fidelity. The goal is character consistency across multiple images. Use this character as the subject for the background image.`
+        `A reference image of a character is provided. Your primary goal is **character consistency**.
+You MUST use the character from this reference image as the main subject.
+Replicate the character's appearance, including their face, hair, clothing, and overall style, with the highest possible fidelity.
+If the user provides a prompt describing a scene or action, place this exact character into that scene.`
       );
       promptParts.push({media: {url: input.image}});
     }

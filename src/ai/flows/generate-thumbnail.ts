@@ -63,8 +63,10 @@ Analyze the user's request, considering the following principles of great thumbn
     
     if (input.image) {
       promptParts.push(
-        `A reference image is provided. **If the user's prompt describes a scene or action, place the character from this reference image into that scene.** You MUST maintain the character's appearance, including their face, hair, and clothing style, with high fidelity. The goal is character consistency across multiple images.
-Base your new design on this character and the user's prompt.`
+        `A reference image of a character is provided. Your primary goal is **character consistency**.
+You MUST use the character from this reference image as the main subject of the thumbnail.
+Replicate the character's appearance, including their face, hair, clothing, and overall style, with the highest possible fidelity.
+If the user provides a prompt describing a scene or action, place this exact character into that scene while following the thumbnail design principles.`
       );
       promptParts.push({media: {url: input.image}});
     }
