@@ -11,15 +11,16 @@ import ThumbnailGenerator from './ThumbnailGenerator';
 import AssetGrid from './AssetGrid';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { Button } from './ui/button';
-import { Trash2 } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 
 interface ProjectViewProps {
   project: Project;
   updateProject: (project: Project) => void;
   deleteProject: () => void;
+  onGoHome: () => void;
 }
 
-export default function ProjectView({ project, updateProject, deleteProject }: ProjectViewProps) {
+export default function ProjectView({ project, updateProject, deleteProject, onGoHome }: ProjectViewProps) {
   const [isBgLoading, setIsBgLoading] = useState(false);
   const [isThumbLoading, setIsThumbLoading] = useState(false);
   const { toast } = useToast();
@@ -74,31 +75,37 @@ export default function ProjectView({ project, updateProject, deleteProject }: P
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-start">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="font-headline text-3xl font-bold">{project.name}</h2>
           <p className="text-muted-foreground">Manage your project assets and generate new ones.</p>
         </div>
-        <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Project
-                </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle className="font-headline">Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your project and all its assets.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={deleteProject} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+        <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={onGoHome}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Welcome
+            </Button>
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="destructive">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete Project
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="font-headline">Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete your project and all its assets.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={deleteProject} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div>
       </div>
 
       <Tabs defaultValue="background">

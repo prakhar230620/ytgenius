@@ -14,9 +14,10 @@ interface HeaderProps {
   activeProjectId: string | null;
   setActiveProjectId: (id: string | null) => void;
   onCreateProject: (name: string) => void;
+  onGoHome: () => void;
 }
 
-export default function Header({ projects, activeProjectId, setActiveProjectId, onCreateProject }: HeaderProps) {
+export default function Header({ projects, activeProjectId, setActiveProjectId, onCreateProject, onGoHome }: HeaderProps) {
   const [newProjectName, setNewProjectName] = useState('');
   const [isProjectsDialogOpen, setIsProjectsDialogOpen] = useState(false);
 
@@ -37,10 +38,10 @@ export default function Header({ projects, activeProjectId, setActiveProjectId, 
   return (
     <header className="sticky top-0 z-10 w-full border-b bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-4">
+        <button onClick={onGoHome} className="flex items-center gap-4 rounded-sm p-1 -m-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <Logo className="h-8 w-8 text-primary" />
           <h1 className="font-headline text-xl font-bold text-primary">YTGenius</h1>
-        </div>
+        </button>
         <div className="flex items-center gap-2">
           <Dialog open={isProjectsDialogOpen} onOpenChange={setIsProjectsDialogOpen}>
             <DialogTrigger asChild>

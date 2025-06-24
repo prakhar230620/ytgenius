@@ -66,6 +66,8 @@ export default function Home() {
     );
   }
 
+  const goHome = () => setActiveProjectId(null);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header
@@ -73,6 +75,7 @@ export default function Home() {
         activeProjectId={activeProjectId}
         setActiveProjectId={setActiveProjectId}
         onCreateProject={createProject}
+        onGoHome={goHome}
       />
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
         {activeProject ? (
@@ -81,6 +84,7 @@ export default function Home() {
             project={activeProject}
             updateProject={updateProject}
             deleteProject={() => deleteProject(activeProject.id)}
+            onGoHome={goHome}
           />
         ) : (
           <div className="flex flex-col items-center justify-center text-center py-20">
