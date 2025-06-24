@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import UpdatePrompt from "@/components/UpdatePrompt";
@@ -7,7 +7,6 @@ export const metadata: Metadata = {
   title: 'YTGenius - AI YouTube Asset Generator',
   description: 'Generate stunning assets for your YouTube channel with AI.',
   manifest: '/manifest.json',
-  themeColor: '#3F51B5',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -16,12 +15,18 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
   icons: {
     icon: '/icons/icon-192x192.png',
     shortcut: '/icons/icon-192x192.png',
     apple: '/icons/icon-192x192.png',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#3F51B5',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

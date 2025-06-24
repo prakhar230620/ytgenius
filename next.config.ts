@@ -52,6 +52,10 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   /* config options here */
+  webpack: (config, { isServer }) => {
+    config.resolve.alias['handlebars'] = 'handlebars/dist/handlebars.min.js';
+    return config;
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
