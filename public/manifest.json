@@ -1,0 +1,21 @@
+{
+  "name": "YTGenius",
+  "short_name": "YTGenius",
+  "description": "Generate stunning assets for your YouTube channel with AI.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E8EAF6",
+  "theme_color": "#3F51B5",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
