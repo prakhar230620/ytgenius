@@ -69,7 +69,12 @@ const generateThumbnailFlow = ai.defineFlow(
     outputSchema: GenerateThumbnailOutputSchema,
   },
   async input => {
-    if (!input.prompt && !input.image) {
+    // The model requires some text prompt, even if an image is provided.
+    if (input.image && (!input.prompt || !input.prompt.trim())) {
+      input.prompt = "A stunning, eye-catching thumbnail for a YouTube video. Use the provided image as a reference for character or style."
+    }
+
+    if ((!input.prompt || !input.prompt.trim()) && !input.image) {
       throw new Error('Either a prompt or an image must be provided.');
     }
 
