@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Download, Trash2, Wallpaper, Image as ImageIcon, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { formatDistanceToNow } from 'date-fns';
 
 interface AssetCardProps {
@@ -51,6 +51,9 @@ export default function AssetCard({ asset, deleteAsset }: AssetCardProps) {
           </div>
         </DialogTrigger>
         <DialogContent className="max-w-5xl p-0 border-0 bg-transparent">
+            <DialogHeader>
+                <DialogTitle className="sr-only">{asset.prompt || "Image Preview"}</DialogTitle>
+            </DialogHeader>
             <Image
               src={asset.dataUrl}
               alt={asset.prompt}
