@@ -32,7 +32,7 @@ export default function Home() {
         }
       }
     }
-  }, [activeProjectId, projects, isClient, setActiveProjectId]);
+  }, [activeProjectId, projects, isClient]);
 
   const createProject = (name: string) => {
     const id = new Date().toISOString();
