@@ -23,16 +23,17 @@ export default function Home() {
   useEffect(() => {
     if (isClient) {
       const projectIds = Object.keys(projects);
-      const currentProjectIsValid = !!(activeProjectId && projects[activeProjectId]);
+      // This checks if an active project ID is set, but that project no longer exists.
+      const activeProjectIsInvalid = activeProjectId && !projects[activeProjectId];
 
-      if (!currentProjectIsValid) {
+      if (activeProjectIsInvalid) {
+        // Fallback to the first available project, or to the welcome screen if no projects exist.
         const newActiveId = projectIds[0] || null;
-        if (activeProjectId !== newActiveId) {
-            setActiveProjectId(newActiveId);
-        }
+        setActiveProjectId(newActiveId);
       }
     }
   }, [activeProjectId, projects, isClient, setActiveProjectId]);
+
 
   const createProject = (name: string) => {
     const id = new Date().toISOString();
