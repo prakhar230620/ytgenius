@@ -19,6 +19,7 @@ const GenerateBackgroundImageInputSchema = z.object({
     .describe(
       "An optional reference image as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
+  aspectRatio: z.enum(['16:9', '9:16', '1:1']).describe('The desired aspect ratio for the image.'),
 });
 export type GenerateBackgroundImageInput = z.infer<typeof GenerateBackgroundImageInputSchema>;
 
@@ -48,7 +49,7 @@ const generateBackgroundImageFlow = ai.defineFlow(
       throw new Error('Either a prompt or an image must be provided.');
     }
 
-    const systemPrompt = `You are a professional graphic designer specializing in creating stunning, high-quality background images for YouTube videos. Your goal is to create a visually appealing, non-distracting, and thematically appropriate background that enhances the main content of the video. Analyze the user's request carefully. Generate a high-resolution background image suitable for a 16:9 aspect ratio. The image should be beautiful and engaging but subtle enough not to overpower a presenter or on-screen text.`;
+    const systemPrompt = `You are a professional graphic designer specializing in creating stunning, high-quality background images for YouTube videos. Your goal is to create a visually appealing, non-distracting, and thematically appropriate background that enhances the main content of the video. Analyze the user's request carefully. Generate a high-resolution background image suitable for a ${input.aspectRatio} aspect ratio. The image should be beautiful and engaging but subtle enough not to overpower a presenter or on-screen text.`;
 
     const userPromptParts = [
       ...(input.image ? [{media: {url: input.image}}] : []),

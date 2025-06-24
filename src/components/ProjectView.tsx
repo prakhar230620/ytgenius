@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { type Project, type Asset } from '@/types';
+import { type Project, type Asset, type AspectRatio } from '@/types';
 import { generateBackgroundImage } from '@/ai/flows/generate-background-image';
 import { generateThumbnail } from '@/ai/flows/generate-thumbnail';
 import { useToast } from "@/hooks/use-toast";
@@ -25,16 +25,17 @@ export default function ProjectView({ project, updateProject, deleteProject, onG
   const [isThumbLoading, setIsThumbLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleGenerateBackground = async (prompt: string, image?: string) => {
+  const handleGenerateBackground = async (prompt: string, image: string | undefined, aspectRatio: AspectRatio) => {
     setIsBgLoading(true);
     try {
-      const result = await generateBackgroundImage({ prompt, image });
+      const result = await generateBackgroundImage({ prompt, image, aspectRatio });
       const newAsset: Asset = {
         id: new Date().toISOString(),
         type: 'background',
         dataUrl: result.backgroundImageDataUri,
         prompt,
         createdAt: new Date().toISOString(),
+        aspectRatio,
       };
       updateProject({ ...project, assets: [newAsset, ...project.assets] });
       toast({ title: "Success!", description: "Background image generated." });
@@ -46,16 +47,17 @@ export default function ProjectView({ project, updateProject, deleteProject, onG
     }
   };
 
-  const handleGenerateThumbnail = async (prompt: string, image?: string) => {
+  const handleGenerateThumbnail = async (prompt: string, image: string | undefined, aspectRatio: AspectRatio) => {
     setIsThumbLoading(true);
     try {
-      const result = await generateThumbnail({ prompt, image });
+      const result = await generateThumbnail({ prompt, image, aspectRatio });
       const newAsset: Asset = {
         id: new Date().toISOString(),
         type: 'thumbnail',
         dataUrl: result.thumbnail,
         prompt,
         createdAt: new Date().toISOString(),
+        aspectRatio,
       };
       updateProject({ ...project, assets: [newAsset, ...project.assets] });
       toast({ title: "Success!", description: "Thumbnail generated." });

@@ -19,6 +19,7 @@ const GenerateThumbnailInputSchema = z.object({
     .describe(
       "A user-provided image as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
+  aspectRatio: z.enum(['16:9', '9:16', '1:1']).describe('The desired aspect ratio for the image.'),
 });
 export type GenerateThumbnailInput = z.infer<typeof GenerateThumbnailInputSchema>;
 
@@ -56,7 +57,7 @@ Use the following image as a base for your design. You can modify it, enhance it
 Follow these specific instructions from the user: {{{prompt}}}
 {{/if}}
 
-Generate a compelling 1280x720 pixel thumbnail. Ensure it's eye-catching even at small sizes.
+Generate a compelling thumbnail with a {{aspectRatio}} aspect ratio. Ensure it's eye-catching even at small sizes.
 `,
 });
 

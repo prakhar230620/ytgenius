@@ -8,9 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Wand2, Upload, X } from 'lucide-react';
 import Image from 'next/image';
+import { type AspectRatio } from '@/types';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 
 interface ThumbnailGeneratorProps {
-  onGenerate: (prompt: string, image?: string) => void;
+  onGenerate: (prompt: string, image: string | undefined, aspectRatio: AspectRatio) => void;
   isLoading: boolean;
 }
 
@@ -18,6 +20,7 @@ export default function ThumbnailGenerator({ onGenerate, isLoading }: ThumbnailG
   const [prompt, setPrompt] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,7 +46,7 @@ export default function ThumbnailGenerator({ onGenerate, isLoading }: ThumbnailG
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (prompt.trim() || imageBase64) {
-      onGenerate(prompt, imageBase64 ?? undefined);
+      onGenerate(prompt, imageBase64 ?? undefined, aspectRatio);
     }
   };
 
@@ -55,6 +58,28 @@ export default function ThumbnailGenerator({ onGenerate, isLoading }: ThumbnailG
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label>Aspect Ratio</Label>
+            <RadioGroup
+              value={aspectRatio}
+              onValueChange={(value) => setAspectRatio(value as AspectRatio)}
+              className="flex flex-wrap gap-x-4 gap-y-2"
+              disabled={isLoading}
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="16:9" id="thumb-ar-16-9" />
+                <Label htmlFor="thumb-ar-16-9">16:9 (Landscape)</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="9:16" id="thumb-ar-9-16" />
+                <Label htmlFor="thumb-ar-9-16">9:16 (Portrait)</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="1:1" id="thumb-ar-1-1" />
+                <Label htmlFor="thumb-ar-1-1">1:1 (Square)</Label>
+              </div>
+            </RadioGroup>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="image-upload">Base Image (Optional)</Label>
             {imageBase64 ? (

@@ -4,11 +4,12 @@ import Image from 'next/image';
 import { type Asset } from '@/types';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Trash2, Wallpaper, Image as ImageIcon, Eye, ArrowLeft } from 'lucide-react';
+import { Download, Trash2, Wallpaper, Image as ImageIcon, Eye, ArrowLeft, Ratio } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface AssetCardProps {
   asset: Asset;
@@ -27,25 +28,37 @@ export default function AssetCard({ asset, deleteAsset }: AssetCardProps) {
   
   const formattedDate = formatDistanceToNow(new Date(asset.createdAt), { addSuffix: true });
 
+  const currentAspectRatio = asset.aspectRatio || '16:9';
+
+  const aspectRatioClass = {
+    '16:9': 'aspect-video',
+    '9:16': 'aspect-[9/16]',
+    '1:1': 'aspect-square',
+  }[currentAspectRatio];
+
   return (
     <Card className="overflow-hidden flex flex-col group transition-all hover:shadow-xl animate-in fade-in zoom-in-95">
       <Dialog>
         <DialogTrigger asChild>
-          <div className="relative cursor-pointer">
+          <div className="relative cursor-pointer bg-muted">
             <Image
               src={asset.dataUrl}
               alt={asset.prompt}
               width={400}
               height={225}
-              className="aspect-video w-full object-cover bg-muted"
+              className={cn("w-full h-full object-cover", aspectRatioClass)}
             />
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <Eye className="h-10 w-10 text-white" />
             </div>
-            <div className="absolute top-2 right-2">
+            <div className="absolute top-2 right-2 flex flex-col items-end gap-2">
                 <Badge variant="secondary" className="capitalize">
                     {asset.type === 'background' ? <Wallpaper className="h-3 w-3 mr-1" /> : <ImageIcon className="h-3 w-3 mr-1" />}
                     {asset.type}
+                </Badge>
+                <Badge variant="secondary">
+                    <Ratio className="h-3 w-3 mr-1" />
+                    {currentAspectRatio}
                 </Badge>
             </div>
           </div>
