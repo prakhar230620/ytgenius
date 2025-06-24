@@ -17,16 +17,22 @@ export default function Home() {
   }, []);
 
   const activeProject = useMemo(() => {
-    if (!activeProjectId || !projects[activeProjectId]) {
-      const firstProjectId = Object.keys(projects)[0];
-      if (firstProjectId && isClient) {
-        setActiveProjectId(firstProjectId);
-        return projects[firstProjectId];
+    return activeProjectId ? projects[activeProjectId] : null;
+  }, [activeProjectId, projects]);
+
+  useEffect(() => {
+    if (isClient) {
+      const projectIds = Object.keys(projects);
+      const currentProjectIsValid = !!(activeProjectId && projects[activeProjectId]);
+
+      if (!currentProjectIsValid) {
+        const newActiveId = projectIds[0] || null;
+        if (activeProjectId !== newActiveId) {
+            setActiveProjectId(newActiveId);
+        }
       }
-      return null;
     }
-    return projects[activeProjectId];
-  }, [activeProjectId, projects, setActiveProjectId, isClient]);
+  }, [activeProjectId, projects, isClient, setActiveProjectId]);
 
   const createProject = (name: string) => {
     const id = new Date().toISOString();
