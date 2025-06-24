@@ -19,7 +19,14 @@ export default function AssetCard({ asset, deleteAsset }: AssetCardProps) {
   const downloadImage = () => {
     const link = document.createElement('a');
     link.href = asset.dataUrl;
-    link.download = `${asset.type}_${asset.id.slice(0, 8)}.png`;
+    
+    // Create a unique filename with type, id, aspect ratio and timestamp
+    const timestamp = new Date().getTime();
+    const aspectRatioForFilename = asset.aspectRatio?.replace(':', 'x') || '16x9';
+    const promptText = asset.prompt ? asset.prompt.slice(0, 20).replace(/[^a-zA-Z0-9]/g, '_') : 'untitled';
+    
+    link.download = `${asset.type}_${aspectRatioForFilename}_${promptText}_${asset.id.slice(0, 6)}_${timestamp}.png`;
+    
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
