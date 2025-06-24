@@ -64,15 +64,17 @@ const generateBackgroundImageFlow = ai.defineFlow(
     outputSchema: GenerateBackgroundImageOutputSchema,
   },
   async input => {
-    // The model requires some text prompt, even if an image is provided.
-    if (input.image && (!input.prompt || !input.prompt.trim())) {
-      input.prompt = "A professional, high-quality background image suitable for a YouTube video. Use the provided image as a reference for character or style."
-    }
-
-    if ((!input.prompt || !input.prompt.trim()) && !input.image) {
+    // Validate that at least one input is provided.
+    if (!input.prompt?.trim() && !input.image) {
       throw new Error('Either a prompt or an image must be provided.');
     }
-    
+
+    // The model requires a text prompt, even if only an image is provided.
+    // If we have an image but no text prompt, create a default one.
+    if (input.image && !input.prompt?.trim()) {
+      input.prompt = "A professional, high-quality background image suitable for a YouTube video. Use the provided image as a reference for character or style.";
+    }
+
     const renderedPrompt = await generateBackgroundImagePrompt.render(input);
 
     const {media} = await ai.generate({
