@@ -32,7 +32,7 @@ export default function Home() {
         }
       }
     }
-  }, [activeProjectId, projects, isClient]);
+  }, [activeProjectId, projects, isClient, setActiveProjectId]);
 
   const createProject = (name: string) => {
     const id = new Date().toISOString();
@@ -51,13 +51,11 @@ export default function Home() {
   };
 
   const deleteProject = (projectId: string) => {
-    const newProjects = { ...projects };
-    delete newProjects[projectId];
-    setProjects(newProjects);
-    if (activeProjectId === projectId) {
-      const firstProjectId = Object.keys(newProjects)[0] || null;
-      setActiveProjectId(firstProjectId);
-    }
+    setProjects(prev => {
+      const newProjects = { ...prev };
+      delete newProjects[projectId];
+      return newProjects;
+    });
   };
 
   if (!isClient) {

@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 
 function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
+  const [storedValue, setStoredValue] = useState<T>(initialValue);
+
   const readValue = useCallback((): T => {
     if (typeof window === 'undefined') {
       return initialValue;
@@ -15,8 +17,6 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val
       return initialValue;
     }
   }, [initialValue, key]);
-
-  const [storedValue, setStoredValue] = useState<T>(readValue);
 
   const setValue = useCallback((value: T | ((val: T) => T)) => {
     if (typeof window == 'undefined') {
@@ -40,7 +40,8 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val
   
   useEffect(() => {
     setStoredValue(readValue());
-  }, [readValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const handleStorageChange = () => {
