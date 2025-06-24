@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { formatDistanceToNow } from 'date-fns';
-import { cn } from '@/lib/utils';
 
 interface AssetCardProps {
   asset: Asset;
@@ -30,23 +29,16 @@ export default function AssetCard({ asset, deleteAsset }: AssetCardProps) {
 
   const currentAspectRatio = asset.aspectRatio || '16:9';
 
-  const aspectRatioClass = {
-    '16:9': 'aspect-video',
-    '9:16': 'aspect-[9/16]',
-    '1:1': 'aspect-square',
-  }[currentAspectRatio];
-
   return (
     <Card className="overflow-hidden flex flex-col group transition-all hover:shadow-xl animate-in fade-in zoom-in-95">
       <Dialog>
         <DialogTrigger asChild>
-          <div className="relative cursor-pointer bg-muted">
+          <div className="relative cursor-pointer bg-muted aspect-video overflow-hidden">
             <Image
               src={asset.dataUrl}
               alt={asset.prompt}
-              width={400}
-              height={225}
-              className={cn("w-full h-full object-cover", aspectRatioClass)}
+              fill
+              className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <Eye className="h-10 w-10 text-white" />
